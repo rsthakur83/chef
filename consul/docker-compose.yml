@@ -1,0 +1,48 @@
+
+consul:
+  command: -server -bootstrap 
+#  command: -server -bootstrap -advertise 172.30.100.2 -client 0.0.0.0 
+  image: progrium/consul:latest
+  ports:
+  - "8300:8300"
+  - "8400:8400"
+  - "8500:8500"
+  - "8600:53/udp"
+  environment:
+    SERVICE_NAME: consul
+
+registrator:
+#  command: "-internal -ip 172.30.100.1 consul://consul:8500"
+  command: "-internal consul://consul:8500"
+  image: gliderlabs/registrator:latest
+  links:
+  - consul
+  volumes:
+  - "/var/run/docker.sock:/tmp/docker.sock"
+
+web:
+  build: .
+  command: python app.py
+  ports:
+   - "8080:5000"
+  volumes:
+   - .:/code
+  links:
+   - consul
+   - registrator
+  environment:
+    SERVICE_NAME: web
+  dns:
+    - "172.30.100.2"
+
+redis:
+  image: redis
+  ports:
+   - "6379"
+  links:
+   - consul
+   - registrator
+  environment:
+    SERVICE_NAME: redis
+  dns:
+    - "172.30.100.2"
