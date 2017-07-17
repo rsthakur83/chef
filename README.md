@@ -1,1 +1,1 @@
-# chef
+# Python redis docker compose
