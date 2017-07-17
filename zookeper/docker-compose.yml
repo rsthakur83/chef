@@ -1,0 +1,50 @@
+version: '2'
+
+services:
+  zoo1:
+    image: elevy/zookeeper:latest
+    environment:
+      MYID: 1
+      SERVERS: zoo1,zoo2,zoo3
+    ports:
+      - "2181:2181"
+      - "2888"
+      - "3888"
+
+  zoo2:
+    image: elevy/zookeeper:latest
+    environment:
+      MYID: 2
+      SERVERS: zoo1,zoo2,zoo3
+    ports:
+      - "2182:2181"
+      - "2888"
+      - "3888"
+
+  zoo3:
+    image: elevy/zookeeper:latest
+    environment:
+      MYID: 3
+      SERVERS: zoo1,zoo2,zoo3
+    ports:
+      - "2183:2181"
+      - "2888"
+      - "3888"
+  web:
+    build: .
+    command: python app.py
+    ports:
+     - "8080:5000"
+    volumes:
+     - .:/code
+    links:
+     - zoo1
+     - zoo2
+     - zoo3
+  redis:
+    image: redis
+    links:
+     - zoo1
+     - zoo2
+     - zoo3
+
